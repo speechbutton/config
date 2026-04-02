@@ -1,0 +1,46 @@
+# ============================================================================
+# SpeechButton — configuration file
+# Location: ~/.config/speechbutton/config.toml
+#
+# This file controls all SpeechButton settings. Changes are picked up
+# automatically (no restart required). AI agents can edit this file to
+# configure the app programmatically.
+# ============================================================================
+
+[global]
+model = "parakeet-tdt-0.6b-v3-int8"
+language = "auto"
+input_device = ""
+debug_audio = false
+debug_audio_path = "/tmp/speechbutton"
+auto_send = false
+send_delay_sec = 3.0
+auto_punctuation = true
+output_format = "text"
+
+[[hotkey]]
+key = "RightCommand"
+name = "default"
+paste = "accessibility"
+
+[vad]
+enabled = false
+chunk_silence_sec = 0.55
+
+[ptt]
+chunking_enabled = true
+chunk_silence_sec = 1.0
+
+[whisper]
+language = "auto"
+hallucination_filter = true
+translate_to_english = false
+
+[advanced]
+audio_backend = "auto"
+max_recording_sec = 300
+log_level = "info"
+keep_audio_hot = false
+after_stop_debounce_ms = 250
+dead_device_timeout_sec = 3
+auto_start = true
