@@ -36,6 +36,12 @@ language = "auto"
 hallucination_filter = true
 translate_to_english = false
 
+[local_ai]
+# Local AI transform using embedded Gemma 4 (no API, no internet)
+# Download model in Settings → Local AI tab
+# auto_load = true              # Auto-load model on app launch
+# model = "gemma-4-E2B-it-Q4_K_M.gguf"  # Model filename in llm-models/
+
 [advanced]
 audio_backend = "auto"
 max_recording_sec = 300
