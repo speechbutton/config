@@ -104,18 +104,20 @@ Examples for exec:
 Runs BEFORE output. Text is piped through the command (stdin → stdout).
 If transform fails (exit code ≠ 0), output is cancelled.
 
+**Working directory is always the config folder**, so use relative paths:
+
 ```toml
 # Via Claude API (uses your Claude Code subscription):
-transform = "~/.config/speechbutton/scripts/transform_claude.py ~/.config/speechbutton/prompts/translate_en.md"
+transform = "scripts/transform_claude.py prompts/translate_en.md"
 
 # Via OpenAI API (uses your Codex subscription):
-transform = "~/.config/speechbutton/scripts/transform_openai.py ~/.config/speechbutton/prompts/cleanup.md gpt-4o-mini"
+transform = "scripts/transform_openai.py prompts/cleanup.md gpt-4o-mini"
 
-# Custom script:
+# Custom script (absolute path also works):
 transform = "python3 ~/my_transform.py"
 ```
 
-Prompt files are in `~/.config/speechbutton/prompts/` as `.md` files. Examples included:
+Prompt files are in `prompts/` directory as `.md` files. Examples included:
 - `translate_en.md` — translate to English
 - `cleanup.md` — remove filler words, fix grammar
 - `summarize.md` — summarize in 1-2 sentences
@@ -135,7 +137,7 @@ name = "default"
 key = "RightCommand"
 channel = "1"
 name = "translate"
-transform = "~/.config/speechbutton/scripts/transform_claude.py ~/.config/speechbutton/prompts/translate_en.md"
+transform = "scripts/transform_claude.py prompts/translate_en.md"
 ```
 
 **Channel 2 — append to notes file:**
@@ -153,7 +155,7 @@ file = "~/Documents/voice-notes.txt"
 key = "RightCommand"
 channel = "3"
 name = "slack"
-exec = "~/.config/speechbutton/scripts/send_slack.py"
+exec = "scripts/send_slack.py"
 ```
 
 **Channel 4 — webhook to API:**
@@ -172,7 +174,7 @@ output_format = "json"
 key = "RightCommand"
 channel = "5"
 name = "claude-agent"
-transform = "~/.config/speechbutton/scripts/transform_claude.py ~/.config/speechbutton/prompts/cleanup.md"
+transform = "scripts/transform_claude.py prompts/cleanup.md"
 exec = "claude -p --bare"
 ```
 
