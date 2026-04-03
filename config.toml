@@ -41,6 +41,7 @@ translate_to_english = false
 # Download model in Settings → Local AI tab
 # auto_load = true              # Auto-load model on app launch
 # model = "gemma-4-E2B-it-Q4_K_M.gguf"  # Model filename in llm-models/
+# server_address = "127.0.0.1:11435"  # HTTP server (OpenAI-compatible API, auto-starts when model loads)
 
 [advanced]
 audio_backend = "auto"
