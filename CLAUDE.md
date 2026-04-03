@@ -4,12 +4,11 @@
 A macOS menu bar app that transcribes speech to text. Hold a hotkey, speak, release — text appears instantly.
 
 ## Config location
-The config folder is inside the app's sandbox container. To find it:
-- In the app: **Settings → Config → Open Config Folder**
-- Terminal: `open ~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application\ Support/SpeechButton/`
+`~/.config/speechbutton/config.toml`
 
-All relative paths in this document are relative to the config folder.
-Transform scripts and exec commands run with the config folder as working directory.
+This is a symlink to the app's sandbox container (created automatically on first launch).
+All relative paths in this document are relative to `~/.config/speechbutton/`.
+Transform scripts and exec commands run with this folder as working directory.
 
 ## What you can configure
 
@@ -281,15 +280,15 @@ tr '[:lower:]' '[:upper:]'
 Check transform errors:
 ```bash
 # Open config folder
-open ~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application\ Support/SpeechButton/
+open ~/.config/speechbutton
 
 # View logs
-tail -f ~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application\ Support/SpeechButton/logs/speechbutton.log | grep -i transform
+tail -f ~/.config/speechbutton/logs/speechbutton.log | grep -i transform
 ```
 
 Test a transform manually:
 ```bash
-cd ~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application\ Support/SpeechButton/
+cd ~/.config/speechbutton
 echo "test input text" | python3 scripts/transform_claude.py prompts/translate_en.md
 ```
 
