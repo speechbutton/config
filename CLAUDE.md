@@ -4,7 +4,9 @@
 A macOS menu bar app that transcribes speech to text. Hold a hotkey, speak, release — text appears instantly.
 
 ## Config location
-`~/.config/speechbutton/config.toml` — main configuration file.
+`~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application Support/SpeechButton/config.toml`
+
+Shortcut: `open ~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application\ Support/SpeechButton/`
 
 ## What you can configure
 
