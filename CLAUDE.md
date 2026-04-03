@@ -4,9 +4,12 @@
 A macOS menu bar app that transcribes speech to text. Hold a hotkey, speak, release — text appears instantly.
 
 ## Config location
-`~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application Support/SpeechButton/config.toml`
+The config folder is inside the app's sandbox container. To find it:
+- In the app: **Settings → Config → Open Config Folder**
+- Terminal: `open ~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application\ Support/SpeechButton/`
 
-Shortcut: `open ~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application\ Support/SpeechButton/`
+All relative paths in this document are relative to the config folder.
+Transform scripts and exec commands run with the config folder as working directory.
 
 ## What you can configure
 
@@ -42,14 +45,14 @@ file = "~/notes.txt"
 # output_format = "json"  # optional: write JSON instead of plain text
 ```
 
-**Webhook** — sends HTTP POST with JSON body:
+**Webhook** — sends HTTP POST:
 ```toml
 webhook = "http://localhost:8080/transcription"
 ```
 
 **Exec** — pipes text to a shell command via stdin:
 ```toml
-exec = "python3 ~/.config/speechbutton/scripts/send_slack.py"
+exec = "scripts/send_slack.py"
 ```
 The command receives the transcribed text on stdin (plain text by default).
 Set `output_format = "json"` to receive JSON instead.
@@ -57,10 +60,8 @@ Set `output_format = "json"` to receive JSON instead.
 ### JSON format
 When `output_format = "json"` or for webhook, the JSON structure is:
 
-**Webhook payload** (HTTP POST body):
 ```json
 {
-  "event": "transcription",
   "text": "Hello, this is a test.",
   "lang": "en",
   "model": "parakeet-tdt-0.6b-v3-int8",
@@ -71,18 +72,7 @@ When `output_format = "json"` or for webhook, the JSON structure is:
 }
 ```
 
-**File/Exec JSON** (when `output_format = "json"`):
-```json
-{
-  "text": "Hello, this is a test.",
-  "lang": "en",
-  "model": "parakeet-tdt-0.6b-v3-int8",
-  "duration_ms": 3200,
-  "source": "ptt",
-  "device": "MacBook Pro Microphone",
-  "timestamp": "2026-04-01T12:00:00.000Z"
-}
-```
+Webhook adds `"event": "transcription"` to the payload.
 
 Fields:
 - `text` — full transcribed text (after hallucination filter + auto-punctuation + transform)
@@ -97,14 +87,14 @@ Note: for exec/webhook/file, audio is always accumulated fully before transcript
 
 Examples for exec:
 - `pbcopy` — copy to clipboard
-- `python3 ~/scripts/send_email.py` — send email
+- `scripts/send_email.py` — custom script (relative path)
 - `curl -X POST -d @- http://api.example.com/messages` — HTTP POST
 
 ### Transform (optional pre-processing)
 Runs BEFORE output. Text is piped through the command (stdin → stdout).
 If transform fails (exit code ≠ 0), output is cancelled.
 
-**Working directory is always the config folder**, so use relative paths:
+**Working directory is the config folder**, so use relative paths:
 
 ```toml
 # Via Claude API (uses your Claude Code subscription):
@@ -113,14 +103,13 @@ transform = "scripts/transform_claude.py prompts/translate_en.md"
 # Via OpenAI API (uses your Codex subscription):
 transform = "scripts/transform_openai.py prompts/cleanup.md gpt-4o-mini"
 
-# Custom script (absolute path also works):
+# Custom script (absolute paths also work):
 transform = "python3 ~/my_transform.py"
 ```
 
 Prompt files are in `prompts/` directory as `.md` files. Examples included:
 - `translate_en.md` — translate to English
 - `cleanup.md` — remove filler words, fix grammar
-- `summarize.md` — summarize in 1-2 sentences
 
 ### Example configurations
 
@@ -230,17 +219,17 @@ keep_audio_hot = false       # Keep mic stream always running (faster start)
 ```
 
 ### Hallucination Filtering
-Per-model word lists (one phrase per line, case-insensitive):
-- `~/.config/speechbutton/hallucinations_parakeet`
-- `~/.config/speechbutton/hallucinations_whisper`
+Per-model word lists in the config folder (one phrase per line, case-insensitive):
+- `hallucinations_parakeet`
+- `hallucinations_whisper`
 
 ### Writing prompts
 
-Prompt files are plain `.md` files in `~/.config/speechbutton/prompts/`.
+Prompt files are plain `.md` files in the `prompts/` directory.
 The entire file content is sent as the system prompt to the AI model.
 The transcribed speech is appended as the user message.
 
-Example prompt (`~/.config/speechbutton/prompts/my_prompt.md`):
+Example prompt (`prompts/my_prompt.md`):
 ```
 You are a helpful assistant. The user will give you raw speech transcription.
 Clean it up: fix grammar, remove filler words, make it professional.
@@ -269,7 +258,7 @@ Any command that reads stdin and writes stdout works — not just the built-in s
 Example custom transform:
 ```bash
 #!/bin/bash
-# ~/.config/speechbutton/scripts/uppercase.sh
+# scripts/uppercase.sh
 tr '[:lower:]' '[:upper:]'
 ```
 
@@ -289,22 +278,25 @@ tr '[:lower:]' '[:upper:]'
 
 ### Diagnostics
 
-Logs: `~/Library/Application Support/SpeechButton/logs/speechbutton.log`
-
 Check transform errors:
 ```bash
-tail -f ~/Library/Application\ Support/SpeechButton/logs/speechbutton.log | grep -i transform
+# Open config folder
+open ~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application\ Support/SpeechButton/
+
+# View logs
+tail -f ~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application\ Support/SpeechButton/logs/speechbutton.log | grep -i transform
 ```
 
 Test a transform manually:
 ```bash
-echo "test input text" | python3 ~/.config/speechbutton/scripts/transform_claude.py ~/.config/speechbutton/prompts/translate_en.md
+cd ~/Library/Containers/com.speechbutton.SpeechButton/Data/Library/Application\ Support/SpeechButton/
+echo "test input text" | python3 scripts/transform_claude.py prompts/translate_en.md
 ```
 
 Config is hot-reloaded — changes take effect immediately, no restart needed.
 
 ### Scripts directory
-`~/.config/speechbutton/scripts/` — transform and exec scripts.
+`scripts/` — transform and exec scripts.
 Built-in:
 - `transform_claude.py` — Claude API transform (uses Claude Code OAuth)
 - `transform_openai.py` — OpenAI API transform (uses Codex OAuth or OPENAI_API_KEY)
