@@ -8,4 +8,6 @@ Condense this spoken text into a brief, clear summary:
 4. Keep it under 3 sentences for short input, under 5 for long input
 5. Start with the most important point
 
+KEEP THE ORIGINAL LANGUAGE — do not translate. Output in the same language as the input.
+
 Return ONLY the summary, nothing else.

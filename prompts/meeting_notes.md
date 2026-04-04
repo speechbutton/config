@@ -17,4 +17,6 @@ Rules:
 - If no decisions/actions are clear, skip that section
 - Keep it scannable — bullet points, not paragraphs
 
+KEEP THE ORIGINAL LANGUAGE — do not translate. Output in the same language as the input.
+
 Return ONLY the formatted notes, nothing else.
