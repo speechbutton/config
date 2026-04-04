@@ -51,7 +51,7 @@ webhook = "http://localhost:8080/transcription"
 
 **Exec** — pipes text to a shell command via stdin:
 ```toml
-exec = "scripts/send_slack.py"
+exec = "integrations/send_slack.py"
 ```
 The command receives the transcribed text on stdin (plain text by default).
 Set `output_format = "json"` to receive JSON instead.
@@ -86,7 +86,7 @@ Note: for exec/webhook/file, audio is always accumulated fully before transcript
 
 Examples for exec:
 - `pbcopy` — copy to clipboard
-- `scripts/send_email.py` — custom script (relative path)
+- `integrations/send_email.py` — custom script (relative path)
 - `curl -X POST -d @- http://api.example.com/messages` — HTTP POST
 
 ### Transform (optional pre-processing)
@@ -97,10 +97,10 @@ If transform fails (exit code ≠ 0), output is cancelled.
 
 ```toml
 # Via Claude API (uses your Claude Code subscription):
-transform = "scripts/transform_claude.py prompts/translate_en.md"
+transform = "transforms/transform_claude.py prompts/translate_en.md"
 
 # Via OpenAI API (uses your Codex subscription):
-transform = "scripts/transform_openai.py prompts/cleanup.md gpt-4o-mini"
+transform = "transforms/transform_openai.py prompts/cleanup.md gpt-4o-mini"
 
 # Custom script (absolute paths also work):
 transform = "python3 ~/my_transform.py"
@@ -125,7 +125,7 @@ name = "default"
 key = "RightCommand"
 channel = "1"
 name = "translate"
-transform = "scripts/transform_claude.py prompts/translate_en.md"
+transform = "transforms/transform_claude.py prompts/translate_en.md"
 ```
 
 **Channel 2 — append to notes file:**
@@ -143,7 +143,7 @@ file = "~/Documents/voice-notes.txt"
 key = "RightCommand"
 channel = "3"
 name = "slack"
-exec = "scripts/send_slack.py"
+exec = "integrations/send_slack.py"
 ```
 
 **Channel 4 — webhook to API:**
@@ -162,7 +162,7 @@ output_format = "json"
 key = "RightCommand"
 channel = "5"
 name = "claude-agent"
-transform = "scripts/transform_claude.py prompts/cleanup.md"
+transform = "transforms/transform_claude.py prompts/cleanup.md"
 exec = "claude -p --bare"
 ```
 
@@ -257,7 +257,7 @@ Any command that reads stdin and writes stdout works — not just the built-in s
 Example custom transform:
 ```bash
 #!/bin/bash
-# scripts/uppercase.sh
+# transforms/uppercase.sh
 tr '[:lower:]' '[:upper:]'
 ```
 
@@ -289,13 +289,14 @@ tail -f ~/.config/speechbutton/logs/speechbutton.log | grep -i transform
 Test a transform manually:
 ```bash
 cd ~/.config/speechbutton
-echo "test input text" | python3 scripts/transform_claude.py prompts/translate_en.md
+echo "test input text" | python3 transforms/transform_claude.py prompts/translate_en.md
 ```
 
 Config is hot-reloaded — changes take effect immediately, no restart needed.
 
 ### Scripts directory
-`scripts/` — transform and exec scripts.
+`transforms/` — transform scripts (text processing)
+`integrations/` — exec scripts (send to external services)
 Built-in:
 - `transform_claude.py` — Claude API transform (uses Claude Code OAuth)
 - `transform_openai.py` — OpenAI API transform (uses Codex OAuth or OPENAI_API_KEY)
