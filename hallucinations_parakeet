@@ -1,0 +1,19 @@
+# Parakeet-specific hallucination phrases
+# CTC/TDT model outputs these filler words on silence
+# Parakeet V3 rarely hallucinates, but fillers still occur
+
+yeah
+mm-hmm
+mhm
+uh
+um
+hmm
+hm
+mm
+uh-huh
+ah
+eh
+er
+yeah so
+uh so
+um so
