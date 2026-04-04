@@ -9,20 +9,16 @@ Usage:
     echo '{"title":"Bug","description":"Details","priority":2}' | send_linear.py
     echo '{"title":"Bug","description":"Details"}' | send_linear.py --team "Engineering"
 
-Configuration (first match wins):
-    1. --key flag: send_linear.py --key lin_api_xxx
-    2. LINEAR_API_KEY environment variable
-    3. ~/.config/speechbutton/linear.json: {"api_key": "lin_api_xxx", "team_id": "..."}
+Configuration:
+    LINEAR_API_KEY environment variable (required)
 
 Team resolution:
     1. --team flag (team name, matched against Linear teams)
-    2. team_id in linear.json config
-    3. First team in the workspace (auto-detect)
+    2. First team in the workspace (auto-detect)
 """
 
 import json
 import os
-import pathlib
 import sys
 import urllib.request
 
@@ -34,37 +30,13 @@ API_URL = "https://api.linear.app/graphql"
 # Configuration
 # ---------------------------------------------------------------------------
 
-def load_config() -> dict:
-    """Load Linear config from ~/.config/speechbutton/linear.json."""
-    config_path = pathlib.Path.home() / ".config" / "speechbutton" / "linear.json"
-    if config_path.exists():
-        try:
-            return json.loads(config_path.read_text())
-        except Exception:
-            pass
-    return {}
-
-
 def get_api_key() -> str:
-    """Resolve Linear API key."""
-    if "--key" in sys.argv:
-        return sys.argv[sys.argv.index("--key") + 1]
-
-    env_key = os.environ.get("LINEAR_API_KEY")
-    if env_key:
-        return env_key
-
-    config = load_config()
-    if "api_key" in config:
-        return config["api_key"]
-
-    print(
-        "No Linear API key found.\n"
-        "  Set LINEAR_API_KEY env var, or\n"
-        "  Create ~/.config/speechbutton/linear.json with {\"api_key\": \"lin_api_xxx\"}",
-        file=sys.stderr,
-    )
-    sys.exit(1)
+    """Get Linear API key from environment."""
+    key = os.environ.get("LINEAR_API_KEY")
+    if not key:
+        print("LINEAR_API_KEY not set. Get one at https://linear.app/settings/account/security", file=sys.stderr)
+        sys.exit(1)
+    return key
 
 
 # ---------------------------------------------------------------------------
@@ -118,11 +90,6 @@ def resolve_team_id(api_key: str) -> str:
                 return t["id"]
         print(f"Team '{team_name}' not found. Available: {', '.join(t['name'] for t in teams)}", file=sys.stderr)
         sys.exit(1)
-
-    # From config
-    config = load_config()
-    if "team_id" in config:
-        return config["team_id"]
 
     # Auto-detect: first team
     return teams[0]["id"]
