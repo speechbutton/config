@@ -14,13 +14,14 @@ input_device = ""
 debug_audio = false
 debug_audio_path = "/tmp/speechbutton"
 auto_send = false
+auto_send_hotkey = "ctrl+enter"
 send_delay_sec = 3.0
 auto_punctuation = true
 output_format = "text"
 
 [[hotkey]]
-key = "RightCommand"
 name = "default"
+key = "RightCommand"
 paste = "accessibility"
 
 [vad]

@@ -1,0 +1,70 @@
+# Cohere Transcribe hallucination phrases
+# Encoder-decoder model hallucinates these on silence/noise
+# Similar to Whisper but shorter list — Cohere is more disciplined
+# Language-prefixed: "lang:phrase" matches only when that language is active
+
+# English
+en:thank you
+en:thank you for watching
+en:thanks for watching
+en:thanks
+en:bye
+en:goodbye
+en:hello
+en:hello everyone
+en:okay
+en:oh
+en:the
+en:the end
+en:i'm sorry
+en:nice
+en:so
+en:see you
+en:see you next time
+en:subscribe
+en:like and subscribe
+en:welcome
+en:welcome to my channel
+
+# Spanish
+es:gracias
+es:gracias por ver
+
+# French
+fr:merci
+fr:merci d'avoir regardé
+
+# German
+de:danke
+de:danke fürs zuschauen
+
+# Russian
+ru:спасибо
+ru:спасибо за просмотр
+
+# Portuguese
+pt:obrigado
+pt:tchau
+
+# Italian
+it:grazie
+
+# Japanese
+ja:ご視聴ありがとうございました
+
+# Korean
+ko:감사합니다
+
+# Arabic
+ar:شكرا
+
+# Chinese
+zh:谢谢
+zh:谢谢观看
+
+# Polish
+pl:dziękuję
+
+# Dutch
+nl:dank u
+nl:bedankt

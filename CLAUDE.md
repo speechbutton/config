@@ -20,9 +20,9 @@ If you add channels, they activate when you press a channel key (1-9, a-z) while
 Each `[[hotkey]]` defines a key binding with its own output routing:
 ```toml
 [[hotkey]]
+name = "my-channel"      # Display name
 key = "RightCommand"     # Modifier key to hold (RightCommand, LeftShift, etc.)
 channel = "1"            # Channel key (press while holding key), omit for default
-name = "my-channel"      # Display name
 paste = "accessibility"  # Output: "accessibility" (paste at cursor), "clipboard", or "false"
 file = "~/notes.txt"     # Output: append to file
 webhook = "http://..."   # Output: HTTP POST with JSON payload
@@ -115,43 +115,43 @@ Prompt files are in `prompts/` directory as `.md` files. Examples included:
 **Default — paste at cursor:**
 ```toml
 [[hotkey]]
-key = "RightCommand"
 name = "default"
+key = "RightCommand"
 ```
 
 **Channel 1 — translate and paste:**
 ```toml
 [[hotkey]]
+name = "translate"
 key = "RightCommand"
 channel = "1"
-name = "translate"
 transform = "transforms/transform_claude.py prompts/translate_en.md"
 ```
 
 **Channel 2 — append to notes file:**
 ```toml
 [[hotkey]]
+name = "notes"
 key = "RightCommand"
 channel = "2"
-name = "notes"
 file = "~/Documents/voice-notes.txt"
 ```
 
 **Channel 3 — send to Slack:**
 ```toml
 [[hotkey]]
+name = "slack"
 key = "RightCommand"
 channel = "3"
-name = "slack"
 exec = "integrations/send_slack.py"
 ```
 
 **Channel 4 — webhook to API:**
 ```toml
 [[hotkey]]
+name = "api"
 key = "RightCommand"
 channel = "4"
-name = "api"
 webhook = "http://localhost:8080/voice"
 output_format = "json"
 ```
@@ -159,9 +159,9 @@ output_format = "json"
 **Channel 5 — clean up and send to Claude Code agent:**
 ```toml
 [[hotkey]]
+name = "claude-agent"
 key = "RightCommand"
 channel = "5"
-name = "claude-agent"
 transform = "transforms/transform_claude.py prompts/cleanup.md"
 exec = "claude -p --bare"
 ```
@@ -194,8 +194,13 @@ chunk_silence_sec = 1.0   # Silence duration to split a chunk
 Automatically presses Enter after pasting (for chat apps):
 ```toml
 auto_send = false
+auto_send_hotkey = "ctrl+enter"  # Hotkey to toggle auto-send on/off
 send_delay_sec = 3.0
 ```
+
+Hotkey format: modifier+key, e.g. `"ctrl+enter"`, `"cmd+shift+space"`, `"alt+a"`.
+Modifiers: `ctrl`, `shift`, `alt`/`option`, `cmd`/`command`.
+Keys: `enter`, `space`, `tab`, `escape`, `delete`, or any letter/number.
 
 ### Input Device
 ```toml
@@ -209,18 +214,41 @@ match = "iPhone"       # Substring match (case-insensitive)
 keep_hot = true        # Keep audio stream always running for this device
 ```
 
+### Local AI (Gemma 4)
+Embedded LLM for text transforms (translation, cleanup, editing).
+```toml
+[llm]
+temperature = 0.3       # 0.0-1.0 — lower = more deterministic. Default: 0.3
+top_k = 40              # 1-100 — fewer = more focused output. Default: 40
+top_p = 0.9             # 0.0-1.0 — nucleus sampling threshold. Default: 0.9
+context_size = 32768    # Context window in tokens. Gemma 4 E2B: max 131072 (128K). Default: 32768
+max_tokens = 0          # Max output tokens. 0 = auto (fills remaining context window). Default: 0
+```
+
+**Context size guide:**
+- `32768` (32K) — default, good balance of quality and GPU memory
+- `65536` (64K) — for longer texts
+- `131072` (128K) — maximum for Gemma 4 E2B, requires ~8GB GPU memory
+- Output tokens auto-calculated: `context_size - input_tokens`
+
+**Temperature guide:**
+- `0.1-0.3` — grammar correction, punctuation (deterministic)
+- `0.3-0.5` — translation (balanced)
+- `0.5-0.8` — creative rewriting (more diverse)
+
 ### Advanced
 ```toml
 [advanced]
-audio_backend = "auto"       # "auto" (VPIO on macOS 15+), "vpio", "hal"
+audio_backend = "hal"        # "hal" (default, no audio muting), "vpio" (noise suppression, mutes audio)
 max_recording_sec = 300      # Safety limit
 keep_audio_hot = false       # Keep mic stream always running (faster start)
 ```
 
 ### Hallucination Filtering
-Per-model word lists in the config folder (one phrase per line, case-insensitive):
-- `hallucinations_parakeet`
-- `hallucinations_whisper`
+Per-model word lists in `hallucinations/` subdirectory (one phrase per line, case-insensitive):
+- `hallucinations/parakeet` — Parakeet TDT
+- `hallucinations/cohere` — Cohere Transcribe
+- `hallucinations/whisper` — Whisper
 
 ### Writing prompts
 
