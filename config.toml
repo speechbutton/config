@@ -26,7 +26,10 @@ paste = "accessibility"
 
 [vad]
 enabled = false
-chunk_silence_sec = 0.55
+# Silence duration (seconds) that ends a speech segment in Hands-Free
+# mode. 0.7 s strikes a balance between letting you finish a thought
+# and not dragging the segment past the natural sentence boundary.
+chunk_silence_sec = 0.7
 
 [ptt]
 chunking_enabled = true
@@ -52,3 +55,13 @@ keep_audio_hot = false
 after_stop_debounce_ms = 250
 dead_device_timeout_sec = 3
 auto_start = true
+# Gesture that toggles Hands-Free mode on the main PTT hotkey.
+#   true  — a short tap (< `hands_free_short_tap_ms`) toggles
+#           Hands-Free, any longer hold is a normal PTT recording.
+#           Friendlier and more discoverable (default).
+#   false — legacy double-tap gesture.
+hands_free_short_tap_toggle = true
+# Maximum key-down→key-up duration (ms) that still counts as a
+# "short tap" when `hands_free_short_tap_toggle = true`. Holds
+# longer than this are treated as PTT recordings.
+hands_free_short_tap_ms = 250
