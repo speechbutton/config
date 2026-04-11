@@ -2,69 +2,267 @@
 # SpeechButton — configuration file
 # Location: ~/.config/speechbutton/config.toml
 #
-# This file controls all SpeechButton settings. Changes are picked up
+# This file controls ALL SpeechButton settings. Changes are picked up
 # automatically (no restart required). AI agents can edit this file to
-# configure the app programmatically.
+# configure the app programmatically — every key below is documented so
+# an agent can reason about what each value does and what it affects.
+#
+# For a full narrative guide (output types, transforms, prompts,
+# scripts, examples), see CLAUDE.md in this same directory.
 # ============================================================================
 
+# ─── [global] ────────────────────────────────────────────────────────────────
+# Project-wide defaults. Every hotkey inherits these unless it overrides
+# a specific field in its own [[hotkey]] block.
 [global]
+
+# Speech-to-text model file. Determines accuracy, speed, supported
+# languages, and memory footprint. Built-in options:
+#   "parakeet-tdt-0.6b-v3-int8"  — fast (~30× realtime), 25 languages,
+#                                  very low hallucinations. DEFAULT.
+#   "ggml-large-v3-turbo-q5_0.bin" — Whisper Turbo, 100+ languages,
+#                                  slower, slightly more hallucinations.
+# Custom models can be placed in the app's models directory; see
+# Settings → Models tab for downloads.
 model = "parakeet-tdt-0.6b-v3-int8"
+
+# Transcription language hint.
+#   "auto"     — detect per-recording (slightly slower, more robust
+#                to multilingual users). DEFAULT.
+#   "en","ru","de","fr","es",…  — force a single language. Use this
+#                when you know you're always speaking one language,
+#                the recognizer is noticeably faster and more accurate.
 language = "auto"
+
+# Microphone to capture from.
+#   ""                           — use macOS system default. DEFAULT.
+#   "iPhone (Pavel) Microphone"  — exact device name (see `input_device`
+#                                  dropdown in Settings for your options).
+# If the named device disappears, SpeechButton falls back to the
+# system default and auto-switches back when the device reappears.
 input_device = ""
+
+# Save every captured audio segment as a WAV file for debugging.
+# Enable only when diagnosing a transcription problem — these files
+# add up quickly. Files are written to `debug_audio_path`.
 debug_audio = false
+
+# Directory where WAV files go when `debug_audio = true`. Must be
+# writable. `/tmp/...` is wiped on reboot, which is usually what
+# you want for debug captures.
 debug_audio_path = "/tmp/speechbutton"
+
+# Press Enter automatically after pasting the transcription. Handy
+# for chat apps (Slack, iMessage, Telegram, etc.) where you want
+# the message to send itself. Can be toggled at runtime with
+# `auto_send_hotkey` — the toast at the top of the screen shows
+# the current state. DEFAULT off.
 auto_send = false
+
+# Hotkey that toggles `auto_send` without opening Settings. Format
+# is `modifier+key`, case-insensitive.
+#   modifiers: ctrl, shift, alt/option, cmd/command
+#   keys:      enter, space, tab, escape, delete, or any letter/number
+# Examples: "ctrl+enter", "cmd+shift+space", "alt+a"
 auto_send_hotkey = "ctrl+enter"
+
+# Delay between pasting the text and pressing Enter, in seconds.
+# Gives the host app a moment to process the pasted content
+# (autocomplete dropdowns, mentions, etc.) before Enter fires.
+# Raise if your chat app swallows the Enter. DEFAULT 3.0.
 send_delay_sec = 3.0
+
+# Apply a punctuation model to the transcription before output.
+# Adds commas, periods, question marks, capitalisation. Small
+# speed cost (~5–20 ms per recording), big readability win.
+# DEFAULT on.
 auto_punctuation = true
+
+# Format for the transcription output.
+#   "text"  — raw cleaned text. DEFAULT.
+#   "json"  — structured payload with text, lang, duration_ms,
+#             source (ptt|vad), device, timestamp. Used when a
+#             hotkey outputs to webhook/file/exec for machine
+#             consumption.
 output_format = "text"
 
+
+# ─── [[hotkey]] ───────────────────────────────────────────────────────────────
+# One block per hotkey. The first block without a `channel` field is
+# the DEFAULT hotkey — it fires when you just hold the key. Channel
+# variants (see CLAUDE.md) activate when you press a channel key
+# while holding the main key. Minimum configuration is a single
+# default hotkey; channels are optional.
 [[hotkey]]
+
+# Display name, shown in the Settings UI and in logs. Pure cosmetic.
 name = "default"
+
+# Physical key that holds down to record. Identifier, not character.
+# Supported: RightCommand, LeftCommand, RightShift, LeftShift,
+#            RightOption, LeftOption, RightControl, LeftControl,
+#            CapsLock
 key = "RightCommand"
+
+# Output routing for this hotkey's transcription.
+#   "accessibility" — simulate Cmd+V at the current cursor location.
+#                     Most reliable, works in 95% of apps. DEFAULT.
+#   "clipboard"     — copy to clipboard only, do NOT press Cmd+V.
+#                     User pastes manually.
+#   "false" / "no"  — disable paste entirely. Use when the hotkey
+#                     has a `file`, `webhook`, or `exec` destination
+#                     instead.
+# Other output types (file / webhook / exec / transform) and channels
+# are documented in CLAUDE.md with examples.
 paste = "accessibility"
 
+
+# ─── [vad] ───────────────────────────────────────────────────────────────────
+# Voice activity detection — "Hands-Free" mode. When enabled, the
+# app segments your speech automatically at silence gaps instead of
+# requiring you to hold a hotkey.
 [vad]
+
+# Start in Hands-Free mode on app launch. You can also toggle
+# Hands-Free at runtime via a short tap of your PTT hotkey (see
+# `hands_free_short_tap_toggle` below). DEFAULT off — PTT-only.
 enabled = false
+
 # Silence duration (seconds) that ends a speech segment in Hands-Free
 # mode. 0.7 s strikes a balance between letting you finish a thought
 # and not dragging the segment past the natural sentence boundary.
+# Lower = more aggressive segmentation (shorter messages).
+# Higher = waits longer, fewer but longer segments.
 chunk_silence_sec = 0.7
 
+
+# ─── [ptt] ───────────────────────────────────────────────────────────────────
+# Push-to-talk behaviour — the "hold a key, speak" mode.
 [ptt]
+
+# Stream partial chunks while the PTT key is still held, splitting
+# at silence gaps. Useful for long dictations (the first chunk gets
+# pasted while you're still speaking the rest), but ONLY for plain
+# paste output — hotkeys with a transform, file, exec, or webhook
+# automatically disable chunking at runtime so the full transcript
+# is processed as one unit.
 chunking_enabled = true
+
+# Silence duration (seconds) inside a PTT hold that triggers a chunk
+# split. Only consulted when `chunking_enabled = true`. A 1-second
+# pause is natural sentence-boundary; shorter values split more
+# aggressively.
 chunk_silence_sec = 1.0
 
+
+# ─── [whisper] ───────────────────────────────────────────────────────────────
+# Whisper-specific settings. Only consulted when `[global] model`
+# points at a Whisper model file (ggml-*.bin). Ignored for Parakeet
+# and other non-Whisper models.
 [whisper]
+
+# Language hint for Whisper (100+ supported languages). Same
+# semantics as `[global] language` but scoped to the Whisper backend.
+# "auto" detects per-recording.
 language = "auto"
+
+# Hallucination filter — historically removed known-bad phrases
+# from the output (thank-you-for-watching, please-subscribe, etc.).
+# As of v2.7.2 this is effectively DISABLED in the pipeline because
+# the filter dropped real user speech too often. The key remains
+# here for forward compatibility but does nothing right now.
 hallucination_filter = true
+
+# Use Whisper's translation mode: recognise speech in any language
+# and emit English text. Only works with Whisper models that
+# support translation. DEFAULT off — transcribe, don't translate.
 translate_to_english = false
 
-[local_ai]
-# Local AI transform using embedded Gemma 4 (no API, no internet)
-# Download model in Settings → Local AI tab
-# auto_load = true              # Auto-load model on app launch
-# model = "gemma-4-E2B-it-Q4_K_M.gguf"  # Model filename in llm-models/
-# server_address = "127.0.0.1:11435"  # HTTP server (OpenAI-compatible API, auto-starts when model loads)
 
+# ─── [local_ai] ──────────────────────────────────────────────────────────────
+# Embedded LLM (Gemma 4) for local text transforms — translation,
+# cleanup, rewriting — without external API calls or internet.
+# Download a model via Settings → Local AI tab. All keys below are
+# commented out by default; uncomment to override.
+[local_ai]
+
+# Load the LLM automatically on app launch. Off = first transform
+# request pays a ~3–5 second load cost.
+# auto_load = true
+
+# Model filename (must be placed under `llm-models/` next to
+# the app bundle or in ~/.config/speechbutton/llm-models/).
+# model = "gemma-4-E2B-it-Q4_K_M.gguf"
+
+# Local HTTP server exposing an OpenAI-compatible API. Starts
+# automatically when the model loads. Point your own tools at
+# this URL to use SpeechButton's embedded LLM as a private
+# inference backend.
+# server_address = "127.0.0.1:11435"
+
+
+# ─── [advanced] ──────────────────────────────────────────────────────────────
+# Settings you probably don't need to touch. They exist for edge
+# cases and power users. Read the comments before changing them.
 [advanced]
+
+# CoreAudio capture backend.
+#   "auto"  — let the app pick. DEFAULT.
+#   "hal"   — low-level HAL API, no audio ducking of other apps.
+#   "vpio"  — VoiceProcessingIO, adds noise suppression + echo
+#             cancellation but MUTES other audio during capture.
 audio_backend = "auto"
+
+# Safety cap on a single recording, in seconds. Protects against
+# stuck hotkeys and runaway recordings eating gigabytes of RAM.
+# Recordings past this length are auto-finalised. 300 s = 5 min
+# is comfortable for long dictations; raise if you record lectures.
 max_recording_sec = 300
+
+# Log verbosity.
+#   "error" — only failures
+#   "warn"  — failures + potential issues
+#   "info"  — normal operational events. DEFAULT.
+#   "debug" — verbose, per-recording detail
+#   "trace" — extremely verbose, per-audio-frame detail
 log_level = "info"
+
+# Keep the microphone stream permanently open so the next PTT press
+# starts capturing instantly (saves ~40 ms cold-start time). The
+# trade-off is the macOS red mic indicator stays on whenever
+# SpeechButton is running. Per-device exceptions live in
+# `[[device_rule]]` blocks (see CLAUDE.md).
 keep_audio_hot = false
+
+# Milliseconds the recording keeps running after you release the
+# PTT key. Captures the natural tail of the last word so release
+# timing doesn't clip your speech. 250 ms is natural; raise if
+# words get cut off, lower if you notice delay on release.
 after_stop_debounce_ms = 250
+
+# Seconds of complete silence from a device before it's assumed
+# dead and the capture stream is torn down / reopened. Usually
+# caused by USB-C audio interfaces briefly glitching. 3 s catches
+# real failures without reacting to intentional quiet passages.
 dead_device_timeout_sec = 3
+
+# Launch SpeechButton automatically at login. Managed via macOS
+# Login Items when this value changes.
 auto_start = true
+
 # Gesture that toggles Hands-Free mode on the main PTT hotkey.
 #   true  — a short tap (< `hands_free_short_tap_ms`) toggles
 #           Hands-Free, any longer hold is a normal PTT recording.
 #           Friendlier and more discoverable (default).
 #   false — legacy double-tap gesture.
 hands_free_short_tap_toggle = true
+
 # Maximum key-down→key-up duration (ms) that still counts as a
 # "short tap" when `hands_free_short_tap_toggle = true`. Holds
-# longer than this are treated as PTT recordings.
+# longer than this are treated as PTT recordings. 250 ms matches
+# typical intentional-tap timing; lower for faster keyboards.
 hands_free_short_tap_ms = 250
+
 # Vertical position of the pulsing status dot — fraction of
 # visible screen height from the bottom edge. Golden reference:
 #   0.618 (1/φ)  — upper 2/3, very high
