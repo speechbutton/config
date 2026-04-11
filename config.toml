@@ -65,3 +65,13 @@ hands_free_short_tap_toggle = true
 # "short tap" when `hands_free_short_tap_toggle = true`. Holds
 # longer than this are treated as PTT recordings.
 hands_free_short_tap_ms = 250
+# Vertical position of the pulsing status dot — fraction of
+# visible screen height from the bottom edge. Golden reference:
+#   0.618 (1/φ)  — upper 2/3, very high
+#   0.382 (1/φ²) — upper golden section
+#   0.236 (1/φ³) — upper half of lower
+#   0.146 (1/φ⁴) — lower quarter (DEFAULT)
+#   0.090 (1/φ⁵) — near the dock
+#   0.056 (1/φ⁶) — just above the dock
+# Any value in (0.0, 1.0) works — not just the table above.
+dot_position = 0.146
