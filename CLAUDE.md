@@ -190,6 +190,24 @@ chunking_enabled = true
 chunk_silence_sec = 1.0   # Silence duration to split a chunk
 ```
 
+### Voice Fingerprint
+Drops voice segments that don't match the enrolled user's voice. Works for
+both push-to-talk and hands-free — PTT recordings are split by silence into
+utterances and each is checked independently, so a foreign voice in a pause
+is dropped while your speech goes through. The first 5 recordings auto-enrol
+your voice. After that, non-matching voices (people next to you in a café,
+family in the next room, audio from a video) are silently ignored.
+```toml
+[speaker_gate]
+enabled = false        # Master switch. Downloads ~25 MB WeSpeaker model on first enable.
+threshold = 0.55       # Cosine-similarity cutoff (0.20–0.95). Higher = stricter rejection.
+```
+Per-device profiles: AirPods, MacBook built-in, USB mics each train their
+own profile (Bluetooth codecs and room reverb produce different embeddings
+of the same voice). Profiles live in
+`~/Library/Application Support/SpeechButton/speaker_profiles.json` —
+plain 256-dim vectors, no audio recordings retained, never sent to the cloud.
+
 ### Auto-Send
 Automatically presses Enter after pasting (for chat apps):
 ```toml

@@ -273,3 +273,27 @@ hands_free_short_tap_ms = 250
 #   0.056 (1/φ⁶) — just above the dock
 # Any value in (0.0, 1.0) works — not just the table above.
 dot_position = 0.146
+
+# ─── [speaker_gate] ─────────────────────────────────────────────────────────
+# Voice fingerprint — only transcribe segments that match the
+# enrolled user's voice. Works for both push-to-talk and
+# hands-free: PTT recordings are split by silence into
+# utterances and each is checked independently, so a foreign
+# voice in a pause is dropped while your speech goes through.
+# Off by default; the WeSpeaker model (~25 MB) downloads on
+# first enable. The first 5 recordings auto-enrol your voice;
+# after that, non-matching voices (people next to you in a
+# café, family in the next room, audio from a video) are
+# dropped before reaching ASR.
+[speaker_gate]
+
+# Master switch. When this becomes true, the model is downloaded
+# and the gate is initialised on the next app launch.
+enabled = false
+
+# Cosine-similarity cutoff for accepting a segment. Higher =
+# stricter (more rejections, fewer false accepts). Range 0.20-
+# 0.95. 0.55 is conservative — errs on the side of accepting
+# the user; raise toward 0.65 if too many neighbour voices
+# leak through.
+threshold = 0.55
